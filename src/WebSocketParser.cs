@@ -93,13 +93,16 @@ namespace WebSocketUtils
         public void WriteBytes(byte[] data, bool isString) {
             AddToQueue(GetHeader((ulong)data.Length, isString), data);
         }
-
         private byte[] GetHeader(ulong len, bool isString) {
+            return GetHeader(len, (isString?1:2));
+        }
+
+        private byte[] GetHeader(ulong len, int opcode) {
             //Credit to https://github.com/MazyModz/CSharp-WebSocket-Server/blob/master/Library/Helpers.cs
             int indexStartRawData;
             var frame = new byte[10];
 
-            frame[0] = (byte)(128 + (isString?1:2));
+            frame[0] = (byte)(128 + opcode);
             switch (len)
             {
                 case <= 125:
@@ -155,8 +158,9 @@ namespace WebSocketUtils
             if (!_handler.Connected) return true;
             var head = new byte[2];
             _handler.Receive(head, 0, 2, SocketFlags.None);
-            Console.WriteLine((head[0]-128));
-            _inIsString = ((head[0]-128)==1);
+            var opcode = (head[0]-128);
+            Console.WriteLine(opcode);
+            _inIsString = (opcode == 1);
             var mask = (head[1] & 0b10000000) != 0;
             var msglen = (ulong)(head[1] & 0b01111111);
         
@@ -179,20 +183,17 @@ namespace WebSocketUtils
             }
             _length = msglen;
             _consumed = 0;
-
-            //if (msglen == 0) return false;
         
-            if (mask && msglen != 0) {
+            if (mask) {
                 var masks = new byte[4];
                 _handler.Receive(masks, 0, 4, SocketFlags.None);
                 _mask[0] = masks[0];
                 _mask[1] = masks[1];
                 _mask[2] = masks[2];
                 _mask[3] = masks[3];
+                if (opcode == 9) AddToQueue(GetHeader(0, 10), new byte[0]);
+                if (msglen == 0) return false;
             } else {
-                Console.WriteLine("invalid mask");
-                Console.WriteLine("Has mask: " + mask);
-                Console.WriteLine("Message Length: " + msglen);
                 CloseSocket();
             }
             return true;
