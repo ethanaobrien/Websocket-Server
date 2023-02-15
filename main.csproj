@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp6.0</TargetFramework>
+		<StartupObject>main.main</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="src/WebSocketServer.cs" />
+    <Compile Include="src/WebSocketParser.cs" />
+    <Compile Include="src/WebSocketClient.cs" />
+  </ItemGroup>
+
+</Project>
+
