@@ -76,7 +76,21 @@ namespace WebSocketUtils
             Start(url);
         }
 
-        public void WriteData(string data) {
+        public void Terminate()
+        {
+            try
+            {
+                connection.CloseAsync(WebSocketCloseStatus.NormalClosure, "Application closed", CancellationToken.None);
+            }
+            catch (Exception)
+            {
+                // Ignored
+            }
+
+            _closed = true;
+        }
+
+        public void WriteString(string data) {
             WriteData(Encoding.UTF8.GetBytes(data));
         }
         public void WriteData(byte[] data) {

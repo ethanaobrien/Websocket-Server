@@ -156,6 +156,7 @@ namespace WebSocketUtils
             if (!_handler.Connected) Console.WriteLine("not connected");
             if (_handler.Available == 0 && _handler.Connected) return false;
             if (!_handler.Connected) return true;
+            if (_length - _consumed != 0) return true;
             var head = new byte[2];
             _handler.Receive(head, 0, 2, SocketFlags.None);
             var opcode = (head[0]-128);
@@ -191,8 +192,8 @@ namespace WebSocketUtils
                 _mask[1] = masks[1];
                 _mask[2] = masks[2];
                 _mask[3] = masks[3];
-                if (opcode == 9) AddToQueue(GetHeader(0, 10), new byte[0]);
-                if (msglen == 0) return false;
+                if (opcode == 9) AddToQueue(GetHeader(0, 10), Array.Empty<byte>());
+                if (msglen == 0 || opcode == 9) return TryRead();
             } else {
                 CloseSocket();
             }
